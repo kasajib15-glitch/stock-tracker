@@ -180,7 +180,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta San
     <div class="setup-title">Stock Portfolio Tracker</div>
     <div class="setup-sub">Enter your API keys to get started. Your keys are stored locally only.</div>
     <label class="setup-label">Finnhub API Key</label>
-    <input class="setup-input" id="sFininhub" placeholder="d8xxxxxxxxxxxxxxx">
+    <input class="setup-input" id="sFininhub" placeholder="Q4PQIBV12G835Z53">
     <label class="setup-label">Supabase URL</label>
     <input class="setup-input" id="sSupaUrl" placeholder="https://xxxx.supabase.co">
     <label class="setup-label">Supabase Publishable Key</label>
@@ -470,8 +470,8 @@ async function loadData() {
 async function fetchPrice(ticker) {
   try {
     const [qRes, pRes] = await Promise.all([
-      fetch(`https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${CFG.finnhub}`),
-      fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${CFG.finnhub}`)
+      fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${CFG.finnhub}`),
+      fetch(`https://www.alphavantage.co/query?function=OVERVIEW&symbol=${ticker}&apikey=${CFG.finnhub}`)
     ]);
     const q = await qRes.json();
     const p = await pRes.json();
@@ -505,7 +505,7 @@ async function addStock() {
       quantity: totalQty,
       current_price: data.price,
       change: data.change,
-      change_percent: data.changePct,
+      change_percent: data.changePct || 0,
       last_updated: new Date().toLocaleTimeString()
     }).eq('id', existing.id);
     if (error) { showToast('Error updating!', 'error'); }
@@ -516,7 +516,7 @@ async function addStock() {
   } else {
     const { error } = await sbClient.from('portfolio').insert({
       ticker, company: company || data.company, avg_buy_price: buyPrice, quantity,
-      current_price: data.price, change: data.change, change_percent: data.changePct,
+      current_price: data.price, change: data.change, change_percent: data.changePct || 0,
       note, realized_pnl: 0, last_updated: new Date().toLocaleTimeString()
     });
     if (error) { showToast('Error adding!', 'error'); }
